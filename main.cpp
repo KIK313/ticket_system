@@ -35,7 +35,7 @@ void rd(ins& im, char* ch) {
     return;
 }
 char tmp_char[4010];
-void add_rd(train& tr, char* ch) {
+void add_rd(train& tr, char* ch, int sg) {
     scanf("%s",ch); 
     while(ch[0] != '[') {
         if (ch[1] == 'i') {
@@ -111,10 +111,10 @@ void add_rd(train& tr, char* ch) {
         }
         scanf("%s",ch);
     }
+    if (sg == 0) return;
     tr.lev_time[0] = tr.start_min; tr.lev_time[tr.station_num - 1] = 0;
     for (int i = 1; i < tr.station_num; ++i) 
         tr.arr_time[i] = tr.lev_time[i-1] + tr.arr_time[i], tr.lev_time[i] += tr.arr_time[i];
-
 }
 void qt_rd(train& tr,char* ch) {
     scanf("%s",ch);
@@ -143,7 +143,8 @@ void qr_rd(qr& qr, char* ch) {
             scanf("%s",qr.ed);
         }
         if (ch[1] == 'd') {
-            scanf("%d",&qr.st_day);
+            scanf("%s",tmp_char);
+            qr.st_day = getday(tmp_char);
         }
         if (ch[1] == 'p') {
             scanf("%s",tmp_char);
@@ -202,7 +203,7 @@ int main() {
             if (op[6] == 't') {
                 if (op[9] == 'i') { // query_train
                     train tr;
-                    add_rd(tr, time_stamp);
+                    add_rd(tr, time_stamp, 0);
                     T.query_train(tr);
                 }
                 if (op[9] == 'k') { // query_ticket
@@ -226,7 +227,7 @@ int main() {
         }
         if (op[0] == 'a') { //add_train
             train tr;
-            add_rd(tr, time_stamp);
+            add_rd(tr, time_stamp, 1);
             T.add_train(tr);
             continue;
         }

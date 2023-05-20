@@ -47,6 +47,9 @@ struct pass_tr{
     bool operator == (const pass_tr& other) const {
         return tic_add == other.tic_add;
     }
+    bool operator >= (const pass_tr& other) const {
+        return tic_add >= other.tic_add;
+    }
 };
 #pragma pack(pop)
 struct qr{
@@ -147,10 +150,10 @@ public:
         for (int i = p->start_day + 1; i <= p->ed_day; ++i) ticket_inf.write(tk);
         for (int i = 0; i < p->station_num; ++i) {
             pass_tr it; strcpy(it.tr_id,tr_id); it.arr = p->arr_time[i]; it.lev = p->lev_time[i];
-            it.p = p->price[i]; it.arr = pl.second; it.st = p->start_day; it.ed = p->ed_day;
+            it.p = p->price[i]; it.tic_add = pl.second; it.st = p->start_day; it.ed = p->ed_day;
             it.st_num = i;
             pass_st_tr.insert(p->name[i], it); 
-        }  
+        }
     }
     void query_train(const train& tr) {
         std::pair<int, size_t> g = nors_id_addr.find(tr.train_id);
@@ -235,8 +238,8 @@ public:
             int st_day = q.st_day - (s1[p1].lev / 1440);
             s1[p1].lev = s1[p1].lev % 1440;
             if (st_day < s1[p1].st || st_day > s1[p1].ed) {p1++; p2++; continue;}
-            qr_ticket o; o.price = s2[p1].p - s1[p1].p; 
-            o.st = st_day * 1440 + s1[p1].lev;
+            qr_ticket o; o.price = s2[p2].p - s1[p1].p; 
+            o.st = st_day * 1440 + s1[p1].lev; 
             o.ed = st_day * 1440 + s2[p2].arr; strcpy(o.tr_id,s1[p1].tr_id);
             ticket* r = ticket_inf.read(s1[p1].tic_add + sizeof(ticket) * (st_day - s1[p1].st));
             int mm = 1e7;
@@ -253,7 +256,7 @@ public:
         for (int i = 0; i < (int)answer.size(); ++i) {
             print(answer[i].tr_id);
             print(q.st);
-            prt(answer[i].st); printf("-> "); prt(answer[i].ed);
+            prt(answer[i].st); printf("-> "); print(q.ed); prt(answer[i].ed);
             printf("%d %d\n",answer[i].price, answer[i].seat_num);
         }
         delete []u;

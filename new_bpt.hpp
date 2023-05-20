@@ -230,7 +230,7 @@ private:
                 if (l - 1 < 0 || u->ind[l-1] < key) break; 
                 l--;
             }
-            for (int i = l; i <= r; ++i) find(u->r[i], key),u=cash.find(pl);
+            for (int i = l; i <= r; ++i) find(u->r[i], key, o),u=cash.find(pl);
         }
     }
     void workL(Node* u, Node* son, Node* ls, int l) {

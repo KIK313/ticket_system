@@ -5,6 +5,7 @@
 #include<string>
 #include "bpt.hpp"
 #include "simple_file_LRU.hpp"
+using namespace std;
 ;
 #pragma pack(push,1)
 struct ins
@@ -172,6 +173,7 @@ public:
             size_t pl = addr_inf.write(o);
             user_id r(u.user_id);
             id_addr.insert(r, pl);
+            printf("0\n");
         } else {
             int r = log_user.find(u.c);
             user_id oo(u.user_id); 
@@ -202,6 +204,7 @@ public:
     void print(const char* ch) {
         int len = strlen(ch);
         for (int i = 0; i < len; ++i) printf("%c",ch[i]);
+        printf(" ");
     }
     void query_profile(const ins& u) {
         int pr = log_user.find(u.c);
@@ -224,7 +227,7 @@ public:
             if (pr > uu->pri) {
                 print(uu->user_id); print(uu->user_name);
                 print(uu->email); printf("%d\n",uu->pri);
-            }   
+            } else printf("-1\n");
         }
     }
     void modify_profile(const ins& u) {
@@ -248,7 +251,7 @@ public:
             }
         }
         if (u.password[0] != '\0') {
-            strcpy(uu->password, u.email);
+            strcpy(uu->password, u.password);
         }
         if (u.email[0] != '\0') {
             strcpy(uu->email, u.email);
@@ -260,6 +263,8 @@ public:
             uu->pri = u.pri;
             log_user.modify(u.user_id, u.pri);
         }
+        print(uu->user_id); print(uu->user_name);
+        print(uu->email); printf("%d\n",uu->pri);
     }
     ~users() {
 

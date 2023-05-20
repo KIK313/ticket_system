@@ -4,6 +4,7 @@
 #include<cstring>
 #include<string>
 #include"user.hpp"
+using namespace std;
 char time_stamp[105],op[105];
 void rd(ins& im, char* ch) {
     scanf("%s",ch);
@@ -31,6 +32,8 @@ void rd(ins& im, char* ch) {
     return;
 }
 int main() {
+    freopen("a.in","r",stdin);
+    freopen("a.out","w",stdout);
     scanf("%s",time_stamp);
     char cc[]="id_addr"; char ccc[]="file";
     users U(cc,ccc);
@@ -45,7 +48,7 @@ int main() {
             break;
         }
         if (op[0] == 'a' && op[4] == 'u') { //add_user
-            ins im;
+            ins im; 
             rd(im,time_stamp);
             U.add_user(im);
             continue;
@@ -114,5 +117,7 @@ int main() {
             continue;
         }
     }
+    fclose(stdin);
+    fclose(stdout);
     return 0;
 }

@@ -158,7 +158,8 @@ int main() {
     scanf("%s",time_stamp);
     char cc[]="id_addr"; char ccc[]="file";
     char _t[]="train_inf"; char _tt[]="ticket_inf"; char _ttt[]="noreal"; char _tttt[]="real";
-    users U(cc,ccc); trains T(_t,_tt,_ttt,_tttt);
+    char rr[]="pass_tr";
+    users U(cc,ccc); trains T(_t,_tt,_ttt,_tttt,rr);
     while(1) {
         int ll = strlen(time_stamp);
         for (int i = 0; i < ll; ++i) printf("%c",time_stamp[i]);

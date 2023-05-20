@@ -1,3 +1,6 @@
+#ifndef user_control
+#define user_control
+
 #include <fstream>
 #include<iostream>
 #include<cstdio>
@@ -5,7 +8,6 @@
 #include<string>
 #include "bpt.hpp"
 #include "simple_file_LRU.hpp"
-using namespace std;
 ;
 #pragma pack(push,1)
 struct ins
@@ -270,3 +272,4 @@ public:
 
     }
 };
+#endif

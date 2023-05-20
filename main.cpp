@@ -125,10 +125,13 @@ void qt_rd(train& tr,char* ch) {
     }
 }
 void tr_rd(char* ch, char* st) {
+    scanf("%s",st);
     scanf("%s",ch);
     scanf("%s",st);
 }
 int main() {
+    freopen("a.in","r",stdin);
+    freopen("a.out","w",stdout);
     scanf("%s",time_stamp);
     char cc[]="id_addr"; char ccc[]="file";
     char _t[]="train_inf"; char _tt[]="ticket_inf"; char _ttt[]="noreal"; char _tttt[]="real";
@@ -208,7 +211,7 @@ int main() {
         if (op[0] == 'r' && op[2] == 'l') { //release_train
             char tr_id[22];
             tr_rd(tr_id, time_stamp);
-            T.delete_train(tr_id);
+            T.release_train(tr_id);
             continue;
         }
         if (op[0] == 'b') { // buy_ticket
@@ -223,5 +226,7 @@ int main() {
             continue;
         }
     }
+    fclose(stdin);
+    fclose(stdout);
     return 0;
 }

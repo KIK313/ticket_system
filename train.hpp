@@ -104,7 +104,7 @@ public:
                 for (int j = 0; j < ll; ++j) printf("%c",p->name[i][j]);
                 printf(" "); 
                 if (i == 0) printf("xx-xx xx:xx "); else prt(tm);
-                if (i > 1 && i < p->station_num - 1) tm += p->stop_time[i];
+                if (i >= 1 && i < p->station_num - 1) tm += p->stop_time[i];
                 printf("-> ");
                 if (i + 1 == p->station_num) printf("xx-xx xx:xx "); else prt(tm);
                 printf("%d ",p->price[i]); 
@@ -117,17 +117,17 @@ public:
             train* p = train_inf.read(g.second);
             if (tr.start_day < p->start_day || tr.start_day > p->ed_day) {printf("-1\n"); return;}
             ticket* t = ticket_inf.read(gg.second.second);
+            int len = strlen(tr.train_id);
+            for (int i = 0; i < len; ++i) printf("%c",tr.train_id[i]);
             printf(" "); printf("%c\n", p->type); int tm = p->start_min + tr.start_day * 1440;
             for (int i = 0; i < p->station_num; ++i) {
                 int ll = strlen(p->name[i]);
                 for (int j = 0; j < ll; ++j) printf("%c",p->name[i][j]);
                 printf(" ");
                 if (i == 0) printf("xx-xx xx:xx "); else prt(tm);
-                if (i > 1 && i < p->station_num - 1) tm += p->stop_time[i];
+                if (i >= 1 && i < p->station_num - 1) tm += p->stop_time[i];
                 printf("-> ");
-                if (i + 1 == p->station_num) printf("xx-xx xx:xx "); else prt(tm);
-                printf("%d ",p->price[i]); 
-                if (i + 1 == p->station_num) printf("x\n"); else printf("%d\n",p->seat_num); 
+                if (i + 1 == p->station_num) printf("xx-xx xx:xx "); else prt(tm); 
                 printf("%d ",p->price[i]); 
                 if (i + 1 == p->station_num) printf("x\n"); 
                     else printf("%d\n",t->ticket_num[tr.start_day][i]), tm += p->travel_time[i];                 
@@ -135,6 +135,9 @@ public:
         }
     }
     void query_ticket() {
+        
+    }
+    void query_transfer() {
         
     }
     ~trains(){

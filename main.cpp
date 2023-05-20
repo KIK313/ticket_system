@@ -78,14 +78,14 @@ void add_rd(train& tr, char* ch) {
         }
         if (ch[1] == 't') {
             scanf("%s",tmp_char);
-            int cnt = 0; int len = strlen(tmp_char); int tm = 0;
+            int cnt = 1; int len = strlen(tmp_char); int tm = 0;
             for (int i = 0; i < len; ++i) {
                 if (tmp_char[i] == '|') {
-                    tr.travel_time[cnt] = tm;
+                    tr.arr_time[cnt] = tm;
                     tm = 0; cnt++;
                 } else tm = tm * 10 + tmp_char[i] - '0';
             }
-            tr.travel_time[cnt] = tm;            
+            tr.arr_time[cnt] = tm;            
         }
         if (ch[1] == 'o') {
             scanf("%s", tmp_char);
@@ -93,11 +93,11 @@ void add_rd(train& tr, char* ch) {
                 int cnt = 1; int len = strlen(tmp_char); int tm = 0;
                 for (int i = 0; i < len; ++i) {
                     if (tmp_char[i] == '|') {
-                        tr.stop_time[cnt] = tm;
+                        tr.lev_time[cnt] = tm;
                         tm = 0; cnt++;
                     } else tm = tm * 10 + tmp_char[i] - '0';
                 }
-                tr.stop_time[cnt] = tm;                
+                tr.lev_time[cnt] = tm;                
             } 
         }
         if (ch[1] == 'd') {
@@ -111,6 +111,10 @@ void add_rd(train& tr, char* ch) {
         }
         scanf("%s",ch);
     }
+    tr.lev_time[0] = tr.start_min; tr.lev_time[tr.station_num - 1] = 0;
+    for (int i = 1; i < tr.station_num; ++i) 
+        tr.arr_time[i] = tr.lev_time[i-1] + tr.arr_time[i], tr.lev_time[i] += tr.arr_time[i];
+
 }
 void qt_rd(train& tr,char* ch) {
     scanf("%s",ch);
@@ -128,6 +132,25 @@ void tr_rd(char* ch, char* st) {
     scanf("%s",st);
     scanf("%s",ch);
     scanf("%s",st);
+}
+void qr_rd(qr& qr, char* ch) {
+    scanf("%s",ch); qr.is_time = 1;
+    while (ch[0] != '[') {
+        if (ch[1] == 's') {
+            scanf("%s",qr.st);
+        }
+        if (ch[1] == 't') {
+            scanf("%s",qr.ed);
+        }
+        if (ch[1] == 'd') {
+            scanf("%d",&qr.st_day);
+        }
+        if (ch[1] == 'p') {
+            scanf("%s",tmp_char);
+            if (tmp_char[0] == 'c') qr.is_time = 0;
+        }
+        scanf("%s",ch);
+    }
 }
 int main() {
     freopen("a.in","r",stdin);
@@ -182,10 +205,14 @@ int main() {
                     T.query_train(tr);
                 }
                 if (op[9] == 'k') { // query_ticket
-
+                    qr qr;
+                    qr_rd(qr, time_stamp);
+                    T.query_ticket(qr);
                 }
                 if (op[9] == 'n') { // query_transfer
-
+                    qr qr;
+                    qr_rd(qr, time_stamp);
+                    T.query_transfer(qr);
                 }
             }
             continue;

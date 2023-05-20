@@ -12,5 +12,15 @@ inline int getday(const char ch[]) {
     if (ch[1]-'0' > 7) d += 31;
     return d;
 }
-
+void prt(int t) {
+    int d = t/1440;
+    t = t % 1440;
+    int month = 6; 
+    if (d > 30) {
+        d -= 30; month++;
+        if (d > 31) d -= 31,month++;
+        if (d > 31) d -= 31,month++;
+    }
+    printf("%02d-%02d %02d:%02d ", month, d+1, t/60, t%60);
+}
 #endif

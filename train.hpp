@@ -7,6 +7,7 @@
 #include<fstream>
 #include"simple_file_LRU.hpp"
 #include"bpt.hpp"
+#include"time.hpp"
 ;
 #pragma pack(push,1)
 struct train {
@@ -17,7 +18,7 @@ struct train {
     int travel_time[101];
     int stop_time[101];
     int price[101];
-    bool is_G;
+    char type;
     int start_day; // 0 -> 91;
     int ed_day; // 0 -> 91;
     int start_min; // 0 -> 24*3600
@@ -29,6 +30,7 @@ struct ticket{
         for (int i = st; i <= ed; ++i) 
             for (int j = 0; j < s - 1; ++j) ticket_num[i][j] = t;
     }
+    ticket(){}
 };
 #pragma pack(pop)
 struct train_id {
@@ -89,10 +91,50 @@ public:
         std::pair<size_t, size_t> pl = std::make_pair(g.second, ticket_inf.write(tk));
         rs_id_addr.insert(tr_id, pl);
     }
-    void query_train() {
-
+    void query_train(const train& tr) {
+        std::pair<int, size_t> g = nors_id_addr.find(tr.train_id);
+        if (g.first > 0) {
+            train* p = train_inf.read(g.second);
+            if (tr.start_day < p->start_day || tr.start_day > p->ed_day) {printf("-1\n"); return;}
+            int len = strlen(tr.train_id);
+            for (int i = 0; i < len; ++i) printf("%c",tr.train_id[i]);
+            printf(" "); printf("%c\n", p->type); int tm = p->start_min + tr.start_day * 1440;
+            for (int i = 0; i < p->station_num; ++i) {
+                int ll = strlen(p->name[i]);
+                for (int j = 0; j < ll; ++j) printf("%c",p->name[i][j]);
+                printf(" "); 
+                if (i == 0) printf("xx-xx xx:xx "); else prt(tm);
+                if (i > 1 && i < p->station_num - 1) tm += p->stop_time[i];
+                printf("-> ");
+                if (i + 1 == p->station_num) printf("xx-xx xx:xx "); else prt(tm);
+                printf("%d ",p->price[i]); 
+                if (i + 1 == p->station_num) printf("x\n"); 
+                    else printf("%d\n",p->seat_num), tm += p->travel_time[i]; 
+            }
+        } else {
+            std::pair<int,std::pair<size_t, size_t> > gg = rs_id_addr.find(tr.train_id);
+            if (gg.first == 0) {printf("-1\n"); return;}
+            train* p = train_inf.read(g.second);
+            if (tr.start_day < p->start_day || tr.start_day > p->ed_day) {printf("-1\n"); return;}
+            ticket* t = ticket_inf.read(gg.second.second);
+            printf(" "); printf("%c\n", p->type); int tm = p->start_min + tr.start_day * 1440;
+            for (int i = 0; i < p->station_num; ++i) {
+                int ll = strlen(p->name[i]);
+                for (int j = 0; j < ll; ++j) printf("%c",p->name[i][j]);
+                printf(" ");
+                if (i == 0) printf("xx-xx xx:xx "); else prt(tm);
+                if (i > 1 && i < p->station_num - 1) tm += p->stop_time[i];
+                printf("-> ");
+                if (i + 1 == p->station_num) printf("xx-xx xx:xx "); else prt(tm);
+                printf("%d ",p->price[i]); 
+                if (i + 1 == p->station_num) printf("x\n"); else printf("%d\n",p->seat_num); 
+                printf("%d ",p->price[i]); 
+                if (i + 1 == p->station_num) printf("x\n"); 
+                    else printf("%d\n",t->ticket_num[tr.start_day][i]), tm += p->travel_time[i];                 
+            }
+        }
     }
-    void qury_ticket() {
+    void query_ticket() {
         
     }
     ~trains(){

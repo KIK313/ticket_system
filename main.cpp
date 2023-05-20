@@ -7,6 +7,7 @@
 #include"user.hpp"
 #include"train.hpp"
 #include"time.hpp"
+using namespace std;
 char time_stamp[105],op[105];
 void rd(ins& im, char* ch) {
     scanf("%s",ch);
@@ -61,13 +62,14 @@ void add_rd(train& tr, char* ch) {
         if (ch[1] == 'p') {
             scanf("%s",tmp_char);
             int cnt = 0; int len = strlen(tmp_char); int pr = 0;
+            tr.price[0] = 0;
             for (int i = 0; i < len; ++i) {
                 if (tmp_char[i] == '|') {
-                    tr.price[cnt] = pr;
+                    tr.price[cnt+1] = tr.price[cnt] + pr;
                     pr = 0; cnt++;
                 } else pr = pr * 10 + tmp_char[i] - '0';
             }
-            tr.price[cnt] = pr;    
+            tr.price[cnt+1] = tr.price[cnt] + pr;    
         }
         if (ch[1] == 'x') {
             scanf("%s",tmp_char);
@@ -87,15 +89,16 @@ void add_rd(train& tr, char* ch) {
         }
         if (ch[1] == 'o') {
             scanf("%s", tmp_char);
-            if (tmp_char[0] == '_') continue;
-            int cnt = 1; int len = strlen(tmp_char); int tm = 0;
-            for (int i = 0; i < len; ++i) {
-                if (tmp_char[i] == '|') {
-                    tr.stop_time[cnt] = tm;
-                    tm = 0; cnt++;
-                } else tm = tm * 10 + tmp_char[i] - '0';
-            }
-            tr.stop_time[cnt] = tm;
+            if (tmp_char[0] != '_') {
+                int cnt = 1; int len = strlen(tmp_char); int tm = 0;
+                for (int i = 0; i < len; ++i) {
+                    if (tmp_char[i] == '|') {
+                        tr.stop_time[cnt] = tm;
+                        tm = 0; cnt++;
+                    } else tm = tm * 10 + tmp_char[i] - '0';
+                }
+                tr.stop_time[cnt] = tm;                
+            } 
         }
         if (ch[1] == 'd') {
             scanf("%s",tmp_char);
@@ -104,8 +107,19 @@ void add_rd(train& tr, char* ch) {
         }
         if (ch[1] == 'y') {
             scanf("%s",tmp_char);
-            if(tmp_char[0] == 'G') tr.is_G = 1;
-            else tr.is_G = 0;
+            tr.type = tmp_char[0];
+        }
+        scanf("%s",ch);
+    }
+}
+void qt_rd(train& tr,char* ch) {
+    scanf("%s",ch);
+    while (ch[0] != '[') {
+        if (ch[1] == 'i') {
+            scanf("%s", tr.train_id);
+        } else {
+            scanf("%s",tmp_char);
+            tr.start_day = getday(tmp_char);            
         }
         scanf("%s",ch);
     }
@@ -160,7 +174,9 @@ int main() {
             }
             if (op[6] == 't') {
                 if (op[9] == 'i') { // query_train
-
+                    train tr;
+                    add_rd(tr, time_stamp);
+                    T.query_train(tr);
                 }
                 if (op[9] == 'k') { // query_ticket
 

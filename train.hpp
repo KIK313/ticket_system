@@ -135,7 +135,11 @@ struct train_id {
 struct qr_ticket{
     char tr_id[22];
     int price; int st; int ed; int seat_num;
-
+    qr_ticket(const qr_ticket& other) {
+        strcpy(tr_id, other.tr_id);
+        price = other.price; st = other.st; ed = other.ed; seat_num = other.seat_num;
+    }
+    qr_ticket() {}
 };
 struct station_id {
     char id[32];
@@ -183,7 +187,7 @@ public:
         std::pair<int, size_t> g = nors_id_addr.find(tr.train_id);
         if (g.first > 0) {printf("-1\n"); return;}
         std::pair<int, std::pair<size_t,size_t> > gg = rs_id_addr.find(tr.train_id);
-        if (g.first > 0) {printf("-1\n"); return;}
+        if (gg.first > 0) {printf("-1\n"); return;}
         printf("0\n");
         size_t pl = train_inf.write(tr);
         nors_id_addr.insert(tr.train_id, pl); 
@@ -319,7 +323,8 @@ public:
     }
     void query_transfer(const qr& q) {
         if (q.st_day < 0) {printf("0\n"); return;}
-        
+        printf("\n");
+        //sjtu::vector<pass_tr> 
     }
     void buy_ticket(const by_ticket& b, int time_stamp) {
         if (b.day < 0) {printf("-1\n"); return;}
@@ -375,6 +380,7 @@ public:
         order_inf.find(u,o);
         if (n > (int)o.size()) {printf("-1\n"); return;}
         if (o[n-1].status == 2) {printf("-1\n"); return;}
+        printf("0\n");
         if (o[n-1].status == 0) {
             ticket* tk = ticket_inf.read(o[n-1].pl);
             order_inf.modify(u, o[n-1].ts, 2);

@@ -241,6 +241,7 @@ public:
             if (o.first == 0) {
                 printf("-1\n"); return;
             }
+            if (u.pri >= pr) {printf("-1\n"); return;}
             uu = addr_inf.read(o.second);
         } else {
             std::pair<int, size_t> o = id_addr.find(u.user_id);

@@ -11,7 +11,8 @@ inline int getday(const char ch[]) {
     if (ch[1] - '0' < 6) return -1;
     if (ch[1]-'0' > 6) d += 30;
     if (ch[1]-'0' > 7) d += 31;
-    if (ch[1] - '0' > 8) return -1; 
+    if (ch[1]-'0' > 8) d += 31;
+    if (ch[1] - '0' > 9) return -1; 
     return d;
 }
 void prt(int t) {

@@ -1,5 +1,6 @@
 #ifndef train_control
 #define train_control
+#include <endian.h>
 #include<iostream>
 #include<cstdio>
 #include<cstring>
@@ -10,6 +11,8 @@
 #include"time.hpp"
 #include"new_bpt.hpp"
 #include"vector.hpp"
+#include"ord_bpt.hpp"
+#include"pend_bpt.hpp"
 using namespace std;
 ;
 #pragma pack(push,1)
@@ -33,6 +36,15 @@ struct ticket{
     }
     ticket(){}
 };
+struct ref{
+    char user_id[22];
+    int ord;
+};
+struct by_ticket{
+    char user_id[22],tr_id[22],st[32],ed[32];
+    int day; int num;
+    bool is_pend;
+};
 struct pass_tr{
     size_t tic_add;
     int arr, lev, p, st, ed, st_num;
@@ -50,6 +62,47 @@ struct pass_tr{
     bool operator >= (const pass_tr& other) const {
         return tic_add >= other.tic_add;
     }
+};
+struct Order_val {
+    int status; // 0 -> success 1 -> pending 2 -> refunded
+    int ts,lev,arv,st,ed,num,p; 
+    char tr_id[22];
+    size_t pl; 
+    char st_name[32]; char ed_name[32];
+    bool operator < (const Order_val& other) const {
+        return ts > other.ts;
+    }
+    bool operator > (const int& x) const {
+        return ts > x;
+    }
+    bool operator == (const int& x) const {
+        return ts == x;
+    }
+    bool operator > (const Order_val& other) const {
+        return ts < other.ts;
+    }
+    bool operator == (const Order_val& other) const {
+        return ts == other.ts;
+    }
+    bool operator >= (const Order_val& other) const {
+        return ts <= other.ts;
+    }
+};
+struct pender {
+    int num; int st,ed;
+    int stt; char user_id[22];
+    bool operator < (const pender& other) const {
+        return stt < other.stt;
+    }
+    bool operator > (const pender& other) const {
+        return stt > other.stt;
+    }
+    bool operator == (const pender& other) const {
+        return stt == other.stt;
+    }
+    bool operator >= (const pender& other) const {
+        return stt >= other.stt;
+    }    
 };
 #pragma pack(pop)
 struct qr{
@@ -114,15 +167,17 @@ private:
     BPT<train_id, size_t> nors_id_addr;
     BPT<train_id, std::pair<size_t, size_t> > rs_id_addr;
     new_BPT<station_id, pass_tr> pass_st_tr;
+    ord_BPT<train_id, Order_val> order_inf; 
+    pend_BPT<size_t, pender> pend_list;
     void print(const char* ch) {
         int len = strlen(ch);
         for (int i = 0; i < len; ++i) printf("%c",ch[i]);
         printf(" ");
     }
 public:
-    trains(char c1[], char c2[], char c3[], char c4[], char c5[]) :
+    trains(char c1[], char c2[], char c3[], char c4[], char c5[], char c6[], char c7[]) :
         train_inf(c1, 100),ticket_inf(c2, 20),
-        nors_id_addr(c3),rs_id_addr(c4), pass_st_tr(c5) {
+        nors_id_addr(c3),rs_id_addr(c4), pass_st_tr(c5), order_inf(c6), pend_list(c7) {
     }
     void add_train(const train& tr) {
         std::pair<int, size_t> g = nors_id_addr.find(tr.train_id);
@@ -156,6 +211,7 @@ public:
         }
     }
     void query_train(const train& tr) {
+        if (tr.start_day < 0) {printf("-1\n"); return;}
         std::pair<int, size_t> g = nors_id_addr.find(tr.train_id);
         if (g.first > 0) {
             train* p = train_inf.read(g.second);
@@ -225,6 +281,7 @@ public:
         for (int i = l; i <= r; ++i) a[i] = b[i];
     }
     void query_ticket(const qr& q) {
+        if (q.st_day < 0) {printf("0\n"); return;} 
         sjtu::vector<pass_tr> s1;
         sjtu::vector<pass_tr> s2;
         sjtu::vector<qr_ticket> answer;
@@ -236,7 +293,6 @@ public:
             if (s1[p1].tic_add > s2[p2].tic_add) {p2++; continue;}
             if (s1[p1].p > s2[p2].p) {p1++; p2++; continue;}
             int st_day = q.st_day - (s1[p1].lev / 1440);
-            s1[p1].lev = s1[p1].lev % 1440;
             if (st_day < s1[p1].st || st_day > s1[p1].ed) {p1++; p2++; continue;}
             qr_ticket o; o.price = s2[p2].p - s1[p1].p; 
             o.st = st_day * 1440 + s1[p1].lev; 
@@ -262,7 +318,87 @@ public:
         delete []u;
     }
     void query_transfer(const qr& q) {
+        if (q.st_day < 0) {printf("0\n"); return;}
 
+    }
+    void buy_ticket(const by_ticket& b, int time_stamp) {
+        if (b.day < 0) {printf("-1\n"); return;}
+        pair<int,pair<size_t,size_t> > o = rs_id_addr.find(b.tr_id);
+        if (o.first == 0) {printf("-1\n"); return;}
+        train* tr = train_inf.read(o.second.first);
+
+        int st = -1; int ed = -1;
+        for (int i = 0; i < tr->station_num; ++i) {
+            if (strcmp(b.st, tr->name[i]) == 0) st = i;
+            if (strcmp(b.ed, tr->name[i]) == 0) ed = i;
+        }
+        if (st == -1 || ed == -1 || st >= ed) {printf("-1\n"); return;} 
+        int st_dy = b.day - tr->lev_time[st] / 1440;
+        if (st_dy < tr->start_day || st_dy > tr->ed_day) {printf("-1\n"); return;} 
+        Order_val it; it.st = st; it.ed = ed; 
+        it.lev = st_dy * 1440 + tr->lev_time[st]; 
+        it.arv = st_dy * 1440 + tr->arr_time[ed];
+        strcpy(it.tr_id, b.tr_id); strcpy(it.st_name, b.st); strcpy(it.ed_name, b.ed);
+        it.num = b.num; it.p = tr->price[ed] - tr->price[st]; it.ts = time_stamp;
+        it.pl = o.second.second + sizeof(ticket) * (st_dy - tr->start_day);
+        int mm = 1e7;
+        ticket* e = ticket_inf.read(it.pl);
+        for (int i = st; i < ed; ++i) mm = min(mm, e->ticket_num[i]);
+        if (mm >= b.num) {
+            it.status = 0; printf("%lld\n", 1ll * b.num * it.p);
+            for (int i = st; i < ed; ++i) e->ticket_num[i] -= b.num;
+        } else {
+            if (b.is_pend == 0) {printf("-1\n"); return;}
+            it.status = 1; printf("queue\n");
+            pender o; o.st = st; o.ed = ed; o.num = b.num; o.stt = time_stamp;  
+            strcpy(o.user_id, b.user_id);
+            pend_list.insert(it.pl, o);
+        }
+        order_inf.insert(b.user_id, it);
+    }
+    void query_order(const char* u) {
+        sjtu::vector<Order_val> o;
+        order_inf.find(u, o);
+        printf("%d\n", (int)o.size());
+        for (int i = 0; i < (int)o.size(); ++i) {
+            printf("["); 
+            if (o[i].status == 0) printf("success] ");
+            if (o[i].status == 1) printf("pending] ");
+            if (o[i].status == 2) printf("refunded] ");
+            print(o[i].tr_id); print(o[i].st_name); prt(o[i].lev);
+            printf("-> "); print(o[i].ed_name); prt(o[i].arv); 
+            printf("%d %d\n",o[i].p, o[i].num);
+        }
+    }
+    void refund(const char* u, int n) {
+        sjtu::vector<Order_val> o;
+        order_inf.find(u,o);
+        if (n > (int)o.size()) {printf("-1\n"); return;}
+        if (o[n-1].status == 2) {printf("-1\n"); return;}
+        if (o[n-1].status == 0) {
+            ticket* tk = ticket_inf.read(o[n-1].pl);
+            order_inf.modify(u, o[n-1].ts, 2);
+            for (int i = o[n-1].st; i < o[n-1].ed; ++i) tk->ticket_num[i] += o[n-1].num;
+            sjtu::vector<pender> may_buy_ticket;
+            pend_list.find(o[n-1].pl, may_buy_ticket);
+            pender p;
+            for (int i = 0; i < may_buy_ticket.size(); ++i) {
+                int mm = 1e7;
+                for (int j = may_buy_ticket[i].st; j < may_buy_ticket[i].ed; ++j) 
+                    mm = min(mm, tk->ticket_num[j]);
+                if (mm >= may_buy_ticket[i].num) {
+                    for (int j = may_buy_ticket[i].st; j < may_buy_ticket[i].ed; ++j) 
+                    tk->ticket_num[j] -= may_buy_ticket[i].num;
+                    p.stt = may_buy_ticket[i].stt;
+                    pend_list.del(o[n-1].pl, p);
+                    order_inf.modify(may_buy_ticket[i].user_id, may_buy_ticket[i].stt, 0);
+                }
+            }
+        } else {
+            order_inf.modify(u, o[n-1].ts, 2);
+            pender p; p.stt = o[n-1].ts;
+            pend_list.del(o[n-1].pl, p);
+        }
     }
     ~trains(){
 

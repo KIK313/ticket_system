@@ -268,6 +268,9 @@ public:
         print(uu->user_id); print(uu->user_name);
         print(uu->email); printf("%d\n",uu->pri);
     }
+    bool is_online(const char* ch) {
+        return log_user.find(ch) >= 0;
+    }
     ~users() {
 
     }

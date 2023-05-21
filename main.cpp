@@ -153,14 +153,55 @@ void qr_rd(qr& qr, char* ch) {
         scanf("%s",ch);
     }
 }
+void re_rd(ref& o, char* ch) {
+    scanf("%s",ch);
+    while (ch[0] != '[') {
+        if (ch[1] == 'u') {
+            scanf("%s",o.user_id);
+        }
+        if (ch[1] == 'n') {
+            scanf("%d",&o.ord);
+        }
+        scanf("%s",ch);
+    }
+}
+void by_rd(by_ticket& o, char* ch) {
+    scanf("%s",ch); o.is_pend = 0;
+    while (ch[0] != '[') {
+        if (ch[1] == 'u') {
+            scanf("%s",o.user_id);
+        }
+        if (ch[1] == 'i') {
+            scanf("%s",o.tr_id);
+        }
+        if (ch[1] == 'd') {
+            scanf("%s",tmp_char);
+            o.day = getday(tmp_char);
+        }
+        if (ch[1] == 'f') {
+            scanf("%s",o.st);
+        }
+        if (ch[1] == 't') {
+            scanf("%s",o.ed);
+        }
+        if (ch[1] == 'n') {
+            scanf("%d",&o.num);
+        }
+        if (ch[1] == 'q') {
+            scanf("%s",tmp_char);
+            if (tmp_char[0] == 't') o.is_pend = 1;
+        }
+        scanf("%s",ch);
+    }
+}
 int main() {
     freopen("a.in","r",stdin);
     freopen("a.out","w",stdout);
     scanf("%s",time_stamp);
     char cc[]="id_addr"; char ccc[]="file";
     char _t[]="train_inf"; char _tt[]="ticket_inf"; char _ttt[]="noreal"; char _tttt[]="real";
-    char rr[]="pass_tr";
-    users U(cc,ccc); trains T(_t,_tt,_ttt,_tttt,rr);
+    char rr[]="pass_tr"; char rt[]="order_inf"; char wr[]="pend_list";
+    users U(cc,ccc); trains T(_t,_tt,_ttt,_tttt,rr,rt,wr);
     while(1) {
         int ll = strlen(time_stamp);
         for (int i = 0; i < ll; ++i) printf("%c",time_stamp[i]);
@@ -198,7 +239,11 @@ int main() {
                 U.query_profile(im);
             }
             if (op[6] == 'o') { // query_order
-
+                char Ur[22];
+                scanf("%s",Ur); scanf("%s",Ur);
+                if (U.is_online(Ur)) T.query_order(Ur);
+                else printf("-1\n");
+                scanf("%s",time_stamp);
             }
             if (op[6] == 't') {
                 if (op[9] == 'i') { // query_train
@@ -244,10 +289,18 @@ int main() {
             continue;
         }
         if (op[0] == 'b') { // buy_ticket
-             
+            by_ticket it;
+            by_rd(it, time_stamp);
+            if (U.is_online(it.user_id)) T.buy_ticket(it, stt);
+            else printf("-1\n");
             continue;
         }
         if (op[0] == 'r' && op[2] == 'f') { // refund_ticket
+            ref o; o.ord = 1;
+            re_rd(o, time_stamp);
+            if (U.is_online(o.user_id)) {
+                T.refund(o.user_id, o.ord);
+            } else printf("-1\n");
             continue;
         }
         if (op[0] == 'c') { // clean
@@ -255,6 +308,7 @@ int main() {
             continue;
         }
     }
+    cerr<<" AAKK"<<endl;
     fclose(stdin);
     fclose(stdout);
     return 0;

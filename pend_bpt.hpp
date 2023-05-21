@@ -1,5 +1,5 @@
-#ifndef nbpt_hpp
-#define nbpt_hpp
+#ifndef pendbpt
+#define pendbpt
 #include <cstddef>
 #include<iostream>
 #include<cstdio>
@@ -7,21 +7,21 @@
 #include<string>
 #include<fstream>
 #include"vector.hpp"
-const int modd=499;
-const int MM = 49;
+const int MOD=499;
+const int _M = 49;
 template<class Key,class value>
-class new_BPT {
+class pend_BPT {
     #pragma pack(push,1)
     struct Node {   
         int siz;
         bool is_leaf;
-        size_t r[MM+1];
-        Key ind[MM+1];
-        value val[MM+1];
+        size_t r[_M+1];
+        Key ind[_M+1];
+        value val[_M+1];
         Node(){ siz = 0;}
         Node(const Node& other) {
             siz = other.siz; is_leaf = other.is_leaf;
-            for (int i = 0; i <= MM; ++i) 
+            for (int i = 0; i <= _M; ++i) 
                 r[i] = other.r[i], ind[i] = other.ind[i], val[i] = other.val[i];
         } 
     };
@@ -37,13 +37,13 @@ private:
                 size_t pos; // position in external memory 
                 nd_link* hp; // hash pre;
                 nd_link* hn; // hash next
-                nd_link* tp; // time pre
+                nd_link* tp; // time pred
                 nd_link* tn; // time next
                 nd_link(size_t poss=0): pos(poss){ np = nullptr; hp = hn = tp = tn = nullptr;}
                 ~nd_link() {if (np != nullptr) delete np;}
             };
             nd_link Thead,Ttail;
-            nd_link Hhead[modd],Htail[modd];
+            nd_link Hhead[MOD],Htail[MOD];
         public:
             LRU(char ch[]) {
                 siz = 0;
@@ -62,7 +62,7 @@ private:
                     rw.read(reinterpret_cast<char *>(&root_pos),sizeof(size_t));
                 }
                 Thead.tn = &Ttail; Thead.tp = nullptr; Ttail.tp = &Thead; Ttail.tn = nullptr;
-                for (int i = 0; i < modd; ++i) {
+                for (int i = 0; i < MOD; ++i) {
                     Hhead[i].hp = Htail[i].hn = nullptr;
                     Hhead[i].hn = &Htail[i]; Htail[i].hp = &Hhead[i];
                 }
@@ -99,7 +99,7 @@ private:
 				return pl;
             }
             Node* find(size_t pl) {
-            	int s = pl % modd;
+            	int s = pl % MOD;
                 nd_link* w = &Hhead[s]; nd_link* lp = &Htail[s];
                 while (w->hn != lp) {
                     w = w->hn;
@@ -154,7 +154,7 @@ private:
             t++; u->val[t] = val; u->ind[t] = key;
             u->siz++;
             ins_retype it;
-            if (u->siz <= MM) {
+            if (u->siz <= _M) {
                 it.is_split = 0;
                 return it;
             } else {
@@ -186,7 +186,7 @@ private:
             for (int i = u->siz; i > ls; i--) u->r[i+1] = u->r[i];
             u->siz++;
             u->ind[ls] = e.kk; u->val[ls] = e.val; u->r[ls+1] = e.rs;   					
-			if (u->siz <= MM - 1) {
+			if (u->siz <= _M - 1) {
                 ins_retype it; it.is_split = 0;
                 return it;
             } else {
@@ -234,7 +234,7 @@ private:
         }
     }
     void workL(Node* u, Node* son, Node* ls, int l) {
-        int O = (MM + 1) / 2;
+        int O = (_M + 1) / 2;
         if (son->is_leaf) {
             if (ls->siz > O) {
                 for (int i = son->siz - 1; i >= 0; --i) {
@@ -281,7 +281,7 @@ private:
         }
     }
     void workR(Node* u, Node* son, Node* rs, int l) {
-        int O = (MM + 1) / 2;
+        int O = (_M + 1) / 2;
         if (son->is_leaf) {
             if (rs->siz > O) {
                 son->ind[son->siz] = rs->ind[0];
@@ -358,7 +358,7 @@ private:
         del(u->r[l], key, val);
         Node* son = cash.find(u->r[l]);
         if (son->is_leaf) {
-            int O = (MM + 1) / 2;
+            int O = (_M + 1) / 2;
             if (son->siz >= O) return;
             if (l > 0 && l + 1 < u->siz) {
                 Node* ls = cash.find(u->r[l-1]);
@@ -369,7 +369,7 @@ private:
                 else workR(u, son, cash.find(u->r[l+1]), l);
             }
         } else {
-            int O = (MM + 1) / 2;
+            int O = (_M + 1) / 2;
             if (son->siz + 1 >= O) return;
             if (l > 0 && l + 1 <= u->siz) {
                 Node* ls = cash.find(u->r[l-1]);
@@ -382,7 +382,7 @@ private:
         }
     }
 public:
-    new_BPT(char ch[]) :cash(ch) {
+    pend_BPT(char ch[]) :cash(ch) {
                 
     }
     int find(const Key& p, sjtu::vector<value>& o) {  
@@ -418,7 +418,8 @@ public:
     void print() {
     	dfs(cash.getroot());
 	}
-    ~new_BPT() {
+    ~pend_BPT() {
+        
     }
 };  
 #endif

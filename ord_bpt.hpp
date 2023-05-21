@@ -1,5 +1,5 @@
-#ifndef nbpt_hpp
-#define nbpt_hpp
+#ifndef ordbpt
+#define ordbpt
 #include <cstddef>
 #include<iostream>
 #include<cstdio>
@@ -7,21 +7,21 @@
 #include<string>
 #include<fstream>
 #include"vector.hpp"
-const int modd=499;
-const int MM = 49;
+const int Mod=499;
+const int W = 49;
 template<class Key,class value>
-class new_BPT {
+class ord_BPT {
     #pragma pack(push,1)
     struct Node {   
         int siz;
         bool is_leaf;
-        size_t r[MM+1];
-        Key ind[MM+1];
-        value val[MM+1];
+        size_t r[W+1];
+        Key ind[W+1];
+        value val[W+1];
         Node(){ siz = 0;}
         Node(const Node& other) {
             siz = other.siz; is_leaf = other.is_leaf;
-            for (int i = 0; i <= MM; ++i) 
+            for (int i = 0; i <= W; ++i) 
                 r[i] = other.r[i], ind[i] = other.ind[i], val[i] = other.val[i];
         } 
     };
@@ -43,7 +43,7 @@ private:
                 ~nd_link() {if (np != nullptr) delete np;}
             };
             nd_link Thead,Ttail;
-            nd_link Hhead[modd],Htail[modd];
+            nd_link Hhead[Mod],Htail[Mod];
         public:
             LRU(char ch[]) {
                 siz = 0;
@@ -62,7 +62,7 @@ private:
                     rw.read(reinterpret_cast<char *>(&root_pos),sizeof(size_t));
                 }
                 Thead.tn = &Ttail; Thead.tp = nullptr; Ttail.tp = &Thead; Ttail.tn = nullptr;
-                for (int i = 0; i < modd; ++i) {
+                for (int i = 0; i < Mod; ++i) {
                     Hhead[i].hp = Htail[i].hn = nullptr;
                     Hhead[i].hn = &Htail[i]; Htail[i].hp = &Hhead[i];
                 }
@@ -99,7 +99,7 @@ private:
 				return pl;
             }
             Node* find(size_t pl) {
-            	int s = pl % modd;
+            	int s = pl % Mod;
                 nd_link* w = &Hhead[s]; nd_link* lp = &Htail[s];
                 while (w->hn != lp) {
                     w = w->hn;
@@ -154,7 +154,7 @@ private:
             t++; u->val[t] = val; u->ind[t] = key;
             u->siz++;
             ins_retype it;
-            if (u->siz <= MM) {
+            if (u->siz <= W) {
                 it.is_split = 0;
                 return it;
             } else {
@@ -186,7 +186,7 @@ private:
             for (int i = u->siz; i > ls; i--) u->r[i+1] = u->r[i];
             u->siz++;
             u->ind[ls] = e.kk; u->val[ls] = e.val; u->r[ls+1] = e.rs;   					
-			if (u->siz <= MM - 1) {
+			if (u->siz <= W - 1) {
                 ins_retype it; it.is_split = 0;
                 return it;
             } else {
@@ -234,7 +234,7 @@ private:
         }
     }
     void workL(Node* u, Node* son, Node* ls, int l) {
-        int O = (MM + 1) / 2;
+        int O = (W + 1) / 2;
         if (son->is_leaf) {
             if (ls->siz > O) {
                 for (int i = son->siz - 1; i >= 0; --i) {
@@ -281,7 +281,7 @@ private:
         }
     }
     void workR(Node* u, Node* son, Node* rs, int l) {
-        int O = (MM + 1) / 2;
+        int O = (W + 1) / 2;
         if (son->is_leaf) {
             if (rs->siz > O) {
                 son->ind[son->siz] = rs->ind[0];
@@ -358,7 +358,7 @@ private:
         del(u->r[l], key, val);
         Node* son = cash.find(u->r[l]);
         if (son->is_leaf) {
-            int O = (MM + 1) / 2;
+            int O = (W + 1) / 2;
             if (son->siz >= O) return;
             if (l > 0 && l + 1 < u->siz) {
                 Node* ls = cash.find(u->r[l-1]);
@@ -369,7 +369,7 @@ private:
                 else workR(u, son, cash.find(u->r[l+1]), l);
             }
         } else {
-            int O = (MM + 1) / 2;
+            int O = (W + 1) / 2;
             if (son->siz + 1 >= O) return;
             if (l > 0 && l + 1 <= u->siz) {
                 Node* ls = cash.find(u->r[l-1]);
@@ -381,8 +381,36 @@ private:
             }
         }
     }
+    void modify(size_t pl, const Key& key, int ts, int st) {
+        Node* u = cash.find(pl);
+        if (u->is_leaf) {
+            if (u->siz == 0) return;
+            if (u->ind[u->siz - 1] < key) return;
+            int l = 0; int r = u->siz - 1;
+            while (l < r) {
+                int mid = (l + r) >> 1;
+                if (u->ind[mid] < key) l = mid + 1;
+                else r = mid;
+            }
+            while (l < u->siz && u->ind[l] == key) {
+                if (u->val[l] == ts)  u->val[l].status = st;  l++;
+            }
+        } else {
+            int l = 0; int r = u->siz;
+			while (l < r) {
+                int mid = (l + r) >> 1;
+                if (u->ind[mid] < key || u->ind[mid] == key) l = mid + 1;
+                else r = mid;
+            }
+            while (1) {
+                if (l - 1 < 0 || u->ind[l-1] < key) break; 
+                l--;
+            }
+            for (int i = l; i <= r; ++i) modify(u->r[i], key, ts, st),u=cash.find(pl);
+        }
+    }
 public:
-    new_BPT(char ch[]) :cash(ch) {
+    ord_BPT(char ch[]) :cash(ch) {
                 
     }
     int find(const Key& p, sjtu::vector<value>& o) {  
@@ -391,6 +419,9 @@ public:
         int g = f_cnt;
         f_cnt = 0;
         return g;
+    }
+    void modify(const Key& p, int tm, int st) {  
+        modify(cash.getroot(), p, tm, st);
     }
     void insert(const Key& p,const value& v) {
     	f_cnt=0;
@@ -418,7 +449,8 @@ public:
     void print() {
     	dfs(cash.getroot());
 	}
-    ~new_BPT() {
+    ~ord_BPT() {
+        
     }
 };  
 #endif

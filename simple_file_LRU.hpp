@@ -62,9 +62,11 @@ private:
             u->tn = Thead.tn; u->tp = &Thead;
             Thead.tn = u; (u->tn)->tp = u;
         }
-        void rd(size_t pl, val& nd) {
+        val rd(size_t pl) {
             rw.seekg(pl);
+            val nd;
             rw.read(reinterpret_cast<char *>(&nd),sizeof(val));
+            return nd;
         }
         size_t getpl(const val& u) {
             rw.seekp(0,std::ios::end);
@@ -87,8 +89,7 @@ private:
                 del(u);
             } else siz++;
             nd_link* nd = new nd_link(pl);
-            val ndd; rd(pl, ndd);
-            nd->np = new val(ndd);
+            nd->np = new val(rd(pl));
             nd->tn = Thead.tn; nd->tp = &Thead;
             (nd->tn)->tp = nd; Thead.tn = nd;
             nd_link* r = &Hhead[s];
@@ -120,7 +121,6 @@ public:
         return cache.is_empty();
     }
     ~file() {
-
     }
 };
 #endif

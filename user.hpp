@@ -272,7 +272,6 @@ public:
         return log_user.find(ch) >= 0;
     }
     ~users() {
-
     }
 };
 #endif

@@ -306,7 +306,7 @@ public:
         }
         printf("%d\n", (int)answer.size());
         if (answer.size() == 0) return;
-        qr_ticket* u = new qr_ticket[answer.size()-1];
+        qr_ticket* u = new qr_ticket[answer.size()];
         if (q.is_time) merge_sort(answer, u, 0, answer.size()-1);
         else Merge_sort(answer, u, 0, answer.size()-1);
         for (int i = 0; i < (int)answer.size(); ++i) {
@@ -319,7 +319,7 @@ public:
     }
     void query_transfer(const qr& q) {
         if (q.st_day < 0) {printf("0\n"); return;}
-
+        
     }
     void buy_ticket(const by_ticket& b, int time_stamp) {
         if (b.day < 0) {printf("-1\n"); return;}
@@ -401,7 +401,6 @@ public:
         }
     }
     ~trains(){
-
     }
 };
 #endif

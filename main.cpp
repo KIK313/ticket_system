@@ -308,7 +308,6 @@ int main() {
             continue;
         }
     }
-    cerr<<" AAKK"<<endl;
     fclose(stdin);
     fclose(stdout);
     return 0;

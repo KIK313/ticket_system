@@ -394,7 +394,7 @@ public:
         pair<int,pair<size_t,size_t> > o = rs_id_addr.find(b.tr_id);
         if (o.first == 0) {printf("-1\n"); return;}
         train* tr = train_inf.read(o.second.first);
-
+        if (b.num > tr->seat_num) {printf("-1\n"); return;}
         int st = -1; int ed = -1;
         for (int i = 0; i < tr->station_num; ++i) {
             if (strcmp(b.st, tr->name[i]) == 0) st = i;

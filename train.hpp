@@ -13,6 +13,7 @@
 #include"vector.hpp"
 #include"ord_bpt.hpp"
 #include"pend_bpt.hpp"
+#include"hash.hpp"
 using namespace std;
 ;
 #pragma pack(push,1)
@@ -28,13 +29,6 @@ struct train {
     int start_day; // 0 -> 91;
     int ed_day; // 0 -> 91;
     int start_min; // 0 -> 24*3600
-};
-struct ticket{
-    int ticket_num[101];
-    ticket(int s, int t) {
-            for (int j = 0; j < s - 1; ++j) ticket_num[j] = t;
-    }
-    ticket(){}
 };
 struct ref{
     char user_id[22];
@@ -323,8 +317,77 @@ public:
     }
     void query_transfer(const qr& q) {
         if (q.st_day < 0) {printf("0\n"); return;}
-        printf("\n");
-        //sjtu::vector<pass_tr> 
+        sjtu::vector<pass_tr> o;
+        pass_st_tr.find(q.st, o);
+        if (o.empty()) {printf("0\n"); return;}    
+        find_hash e;
+        for (int i = 0; i < o.size(); ++i) {
+            int st_dy = q.st_day - o[i].lev / 1440;
+            if (st_dy < o[i].st || st_dy > o[i].ed) continue;
+            train* tr = train_inf.read(rs_id_addr.find(o[i].tr_id).second.first);
+            size_t pl = o[i].tic_add + sizeof(ticket) * (st_dy - o[i].st);
+            for (int j = o[i].st_num + 1; j < tr->station_num; ++j) {
+                trans w; w.pl = pl; w.st = o[i].st_num; w.ed = j;
+                w.price = tr->price[j] - tr->price[o[i].st_num];
+                w.st_lev_time = o[i].lev + st_dy * 1440; 
+                w.trans_arr_time = tr->arr_time[j] + st_dy * 1440;
+                strcpy(w.st_name, tr->name[j]);
+                strcpy(w.tr_id, tr->train_id);
+                e.insert(w);
+            }
+        }
+        sjtu::vector<pass_tr> oo;
+        pass_st_tr.find(q.ed, oo);
+        if (oo.empty()) {printf("0\n"); return;}
+        sjtu::vector<trans_ans> ans;
+        for (int i = 0; i < oo.size(); ++i) {
+            train* tr = train_inf.read(rs_id_addr.find(oo[i].tr_id).second.first);
+            for (int j = oo[i].st_num - 1; j >= 0; --j) {
+                e.find(tr->train_id, tr->name[j], j, oo[i].st_num,  tr->start_day, tr->ed_day, tr->lev_time[j],
+                tr->arr_time[oo[i].st_num], tr->price[oo[i].st_num] - tr->price[j], oo[i].tic_add ,ans);
+            } 
+        }
+        if (ans.empty()) {printf("0\n"); return;}
+        for (int i = 1; i < ans.size(); ++i) {
+            if (q.is_time) {
+                if (ans[i].arr2 - ans[i].lev1 < ans[0].arr2 - ans[0].lev1) ans[0] = ans[i];
+                else if (ans[i].arr2 - ans[i].lev1 == ans[0].arr2 - ans[0].lev1) {
+                    if (ans[i].pr2 + ans[i].pr1 < ans[0].pr2 + ans[0].pr1) ans[0] = ans[i];
+                    else {
+                        if (ans[i].pr2 + ans[i].pr1 == ans[0].pr2 + ans[0].pr1) {
+                            if (strcmp(ans[i].tr_id1,ans[0].tr_id1) < 0) {
+                                ans[0] = ans[i];
+                            } else if(strcmp(ans[i].tr_id1,ans[0].tr_id1) == 0 
+                                && strcmp(ans[i].tr_id2,ans[0].tr_id2) < 0) ans[0] = ans[i];                            
+                        }
+
+                    }
+                }
+            } else {
+                if (ans[i].pr2 + ans[i].pr1 < ans[0].pr2 + ans[0].pr1) ans[0] = ans[i];
+                else if (ans[i].pr2 + ans[i].pr1 == ans[0].pr2 + ans[0].pr1) {
+                    if (ans[i].arr2 - ans[i].lev1 < ans[0].arr2 - ans[0].lev1) ans[0] = ans[i];
+                    else {
+                        if (ans[i].arr2 - ans[i].lev1 == ans[0].arr2 - ans[0].lev1) {
+                            if (strcmp(ans[i].tr_id1,ans[0].tr_id1) < 0) {
+                                ans[0] = ans[i];
+                            } else if(strcmp(ans[i].tr_id1,ans[0].tr_id1) == 0 
+                                && strcmp(ans[i].tr_id2,ans[0].tr_id2) < 0) ans[0] = ans[i];                            
+                        }
+                    }
+                }
+            }
+        }
+        ticket* tk = ticket_inf.read(ans[0].pl1);
+        int tk1 = 1e7;
+        for (int i = ans[0].st1; i < ans[0].ed1; ++i) tk1 = min(tk1, tk->ticket_num[i]);
+        tk = ticket_inf.read(ans[0].pl2);
+        int tk2 = 1e7;
+        for (int i = ans[0].st2; i < ans[0].ed2; ++i) tk2 = min(tk2, tk->ticket_num[i]);
+        print(ans[0].tr_id1); print(q.st); prt(ans[0].lev1); printf("-> ");
+        print(ans[0].tr_st); prt(ans[0].arr1); printf("%d %d\n", ans[0].pr1, tk1);
+        print(ans[0].tr_id2); print(ans[0].tr_st); prt(ans[0].lev2); printf("-> ");
+        print(q.ed); prt(ans[0].arr2); printf("%d %d\n",ans[0].pr2, tk2);    
     }
     void buy_ticket(const by_ticket& b, int time_stamp) {
         if (b.day < 0) {printf("-1\n"); return;}

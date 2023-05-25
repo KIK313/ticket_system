@@ -43,6 +43,7 @@ private:
             }
         }
         bool is_empty() {
+            rw.seekg(0,std::ios::end);
             return (rw.tellg() == 0);
         }
         void rt(nd_link* u) {

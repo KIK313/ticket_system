@@ -195,8 +195,6 @@ void by_rd(by_ticket& o, char* ch) {
     }
 }
 int main() {
-    freopen("a.in","r",stdin);
-    freopen("a.out","w",stdout);
     scanf("%s",time_stamp);
     char cc[]="id_addr"; char ccc[]="file";
     char _t[]="train_inf"; char _tt[]="ticket_inf"; char _ttt[]="noreal"; char _tttt[]="real";
@@ -308,7 +306,5 @@ int main() {
             continue;
         }
     }
-    fclose(stdin);
-    fclose(stdout);
     return 0;
 }

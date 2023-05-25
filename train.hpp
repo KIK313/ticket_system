@@ -469,6 +469,9 @@ public:
             pend_list.del(o[n-1].pl, p);
         }
     }
+    void clear() {
+
+    };
     ~trains(){
     }
 };

@@ -469,9 +469,11 @@ public:
             pend_list.del(o[n-1].pl, p);
         }
     }
-    void clear() {
-
-    };
+    void clear(char c1[], char c2[], char c3[], char c4[], char c5[], char c6[], char c7[]){
+        train_inf.clear(c1); ticket_inf.clear(c2);
+        nors_id_addr.clear(c3); rs_id_addr.clear(c4); pass_st_tr.clear(c5); 
+        order_inf.clear(c6); pend_list.clear(c7);
+    }  
     ~trains(){
     }
 };

@@ -302,8 +302,9 @@ int main() {
             continue;
         }
         if (op[0] == 'c') { // clean
-            T.clear();
-            U.clear();
+            U.clear(cc,ccc); 
+            T.clear(_t,_tt,_ttt,_tttt,rr,rt,wr);
+            printf("0\n");
             continue;
         }
     }

@@ -272,8 +272,8 @@ public:
     bool is_online(const char* ch) {
         return log_user.find(ch) >= 0;
     }
-    void clear() {
-
+    void clear(char w[],char r[]) {
+        id_addr.clear(w); addr_inf.clear(r);
     };
     ~users() {
     }

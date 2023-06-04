@@ -97,6 +97,19 @@ private:
             nd->hn = r->hn; nd->hp = r;
             r->hn->hp = nd; r->hn = nd;
             return nd->np;
+        }
+        void clear(char ch[]) {
+            rw.close();
+            rw.open(ch,std::ios::out|std::ios::binary);
+            rw.close(); rw.open(ch,std::ios::in|std::ios::out|std::ios::binary);
+            siz = 0; 
+            nd_link* p = Thead.tn; nd_link* pl = &Ttail;
+            while (p != pl) {
+                nd_link* q = p->tn;
+                rt(p);
+                delete p;
+                p = q;
+            }  
         } 
         ~LRU() {
             siz = 0; 
@@ -120,6 +133,9 @@ public:
     }
     bool is_empty() {
         return cache.is_empty();
+    }
+    void clear(char ch[]) {
+        cache.clear(ch);
     }
     ~file() {
     }
